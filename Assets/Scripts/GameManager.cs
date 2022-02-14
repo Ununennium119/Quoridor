@@ -1,55 +1,63 @@
-using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
-using UnityEngine.UIElements.Experimental;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private float moveHeight = 0.2f;
-    [SerializeField] private float jumpHeight = 1.3f;
-
     [SerializeField] private GameType gameType;
-    public PlayerNumber currentPlayer = PlayerNumber.PlayerOne;
-    private PlayerController[] _playerControllers;
 
-    private const float CellInitPos = -8.4f;
+    private const float CellLeftDownPos = -8.4f;
     private const float CellSpacing = 2.1f;
-    private readonly CellController[,] _cells = new CellController[9, 9];
-    private readonly List<CellController> _selectableCells = new List<CellController>();
+    private readonly CellController[,] _cellControllers = new CellController[9, 9];
+    private readonly List<CellController> _reachableCells = new List<CellController>();
     [SerializeField] private GameObject cellPrefab;
 
-    private const float WallCellInitDisplacement = 11.5f;
-    private readonly CellController[,] _wallCells = new CellController[4, 9];
+    private const float WallCellHorizontalOffset = 8.4f;
+    private const float WallCellVerticalOffset = 11.5f;
+    private const float WallCellSpacing = 2.1f;
+    private readonly CellController[,] _wallCellControllers = new CellController[4, 9];
     [SerializeField] private GameObject wallCellPrefab;
 
-    [SerializeField] private GameObject player1Prefab;
-    [SerializeField] private GameObject player2Prefab;
-    [SerializeField] private GameObject player3Prefab;
-    [SerializeField] private GameObject player4Prefab;
+    public PlayerNumber currentPlayerNumber = PlayerNumber.PlayerOne;
+    private int _playersCount;
+    private PlayerController[] _playerControllers;
+    [SerializeField] private GameObject[] playerPrefabs;
 
-    private const float WallInitPos = 9.45f;
-    private const float WallInitDisplacement = 11.5f;
-    private const float WallSpacing = 2.1f;
-    [SerializeField] private GameObject wallPrefab;
     public WallController selectedWall;
+    private const float WallHorizontalOffset = 9.45f;
+    private const float WallVerticalOffset = 11.5f;
+    private const float WallSpacing = 2.1f;
+    private int _wallsCount;
+    [SerializeField] private GameObject wallPrefab;
 
     private const float WallPlaceLeftDownPos = -7.35f;
     private const float WallPlaceSpacing = 2.1f;
     private readonly WallPlaceController[,] _wallPlaceControllers = new WallPlaceController[8, 8];
+    private WallPlaceController _activeWallPlaceController;
     [SerializeField] private GameObject wallPlacePrefab;
-    [SerializeField] private WallPlaceController activeWallPlaceController;
 
-    [SerializeField] private GameObject ghostWall;
+    private GhostWallController _ghostWallController;
+    [SerializeField] private GameObject ghostWallPrefab;
 
-    private bool _isGhostWallHorizontal = false;
-    private Material _ghostWallDefaultMaterial;
-    [SerializeField] private Material ghostWallInvalidMaterial;
 
+    private void Awake()
+    {
+        if (gameType == GameType.TwoPlayers)
+        {
+            _playersCount = 2;
+            _wallsCount = 10;
+        }
+        else
+        {
+            _playersCount = 4;
+            _wallsCount = 5;
+        }
+    }
 
     private void Start()
     {
-        _ghostWallDefaultMaterial = ghostWall.GetComponent<Renderer>().material;
+        GameObject ghostWall = Instantiate(ghostWallPrefab);
+        _ghostWallController = ghostWall.GetComponent<GhostWallController>();
 
         CreateCells();
         CreateWallCells();
@@ -58,164 +66,122 @@ public class GameManager : MonoBehaviour
         CreateWallPlaces();
     }
 
+
     private void CreateCells()
     {
-        float currentXPos = CellInitPos;
-        float currentZPos = CellInitPos;
+        float currentXPos = CellLeftDownPos;
+        float currentZPos = CellLeftDownPos;
         for (int z = 0; z < 9; z++)
         {
             for (int x = 0; x < 9; x++)
             {
                 GameObject cell = Instantiate(cellPrefab);
                 cell.transform.position = new Vector3(currentXPos, cell.transform.position.y, currentZPos);
+
                 CellController cellController = cell.GetComponent<CellController>();
                 cellController.Initialize(new Position(x, z), z >= 8, z <= 0, x >= 8, x <= 0);
-                _cells[x, z] = cellController;
+                _cellControllers[x, z] = cellController;
 
                 currentXPos += CellSpacing;
             }
 
             currentZPos += CellSpacing;
-            currentXPos = CellInitPos;
+            currentXPos = CellLeftDownPos;
         }
     }
+
 
     private void CreateWallCells()
     {
-        float currentX = CellInitPos;
-        float currentZ = WallCellInitDisplacement;
+        CreateWallCellRow(WallCellVerticalOffset, 9, 0);
+        CreateWallCellRow(-WallCellVerticalOffset, -1, 1);
+        CreateWallCellColumn(WallCellVerticalOffset, 9, 2);
+        CreateWallCellColumn(-WallCellVerticalOffset, -1, 3);
+    }
+
+    private void CreateWallCellRow(float startZ, int positionZ, int rowIndex)
+    {
+        float currentX = -WallCellHorizontalOffset;
         for (int i = 0; i < 9; i++)
         {
             GameObject wallCell = Instantiate(wallCellPrefab);
-            wallCell.transform.position = new Vector3(currentX, wallCell.transform.position.y, currentZ);
+            wallCell.transform.position = new Vector3(currentX, wallCell.transform.position.y, startZ);
 
             CellController wallCellController = wallCell.GetComponent<CellController>();
-            wallCellController.Initialize(new Position(i, 9),true, true, true, true);
-            _wallCells[0, i] = wallCellController;
+            wallCellController.Initialize(new Position(i, positionZ), true, true, true, true);
+            _wallCellControllers[rowIndex, i] = wallCellController;
 
-            currentX += CellSpacing;
-        }
-
-        currentX = CellInitPos;
-        currentZ = -WallCellInitDisplacement;
-        for (int i = 0; i < 9; i++)
-        {
-            GameObject wallCell = Instantiate(wallCellPrefab);
-            wallCell.transform.position = new Vector3(currentX, wallCell.transform.position.y, currentZ);
-
-            CellController wallCellController = wallCell.GetComponent<CellController>();
-            wallCellController.Initialize(new Position(i, -1),true, true, true, true);
-            _wallCells[1, i] = wallCellController;
-
-            currentX += CellSpacing;
-        }
-
-        currentX = WallCellInitDisplacement;
-        currentZ = CellInitPos;
-        for (int i = 0; i < 9; i++)
-        {
-            GameObject wallCell = Instantiate(wallCellPrefab);
-            wallCell.transform.position = new Vector3(currentX, wallCell.transform.position.y, currentZ);
-            wallCell.transform.Rotate(0, 90, 0);
-
-            CellController wallCellController = wallCell.GetComponent<CellController>();
-            wallCellController.Initialize(new Position(9, i),true, true, true, true);
-            _wallCells[2, i] = wallCellController;
-
-            currentZ += CellSpacing;
-        }
-
-        currentX = -WallCellInitDisplacement;
-        currentZ = CellInitPos;
-        for (int i = 0; i < 9; i++)
-        {
-            GameObject wallCell = Instantiate(wallCellPrefab);
-            wallCell.transform.position = new Vector3(currentX, wallCell.transform.position.y, currentZ);
-            wallCell.transform.Rotate(0, 90, 0);
-
-            CellController wallCellController = wallCell.GetComponent<CellController>();
-            wallCellController.Initialize(new Position(-1, i),true, true, true, true);
-            _wallCells[3, i] = wallCellController;
-
-            currentZ += CellSpacing;
+            currentX += WallCellSpacing;
         }
     }
+
+    private void CreateWallCellColumn(float startX, int positionX, int columnIndex)
+    {
+        float currentZ = -WallCellHorizontalOffset;
+        for (int i = 0; i < 9; i++)
+        {
+            GameObject wallCell = Instantiate(wallCellPrefab);
+            wallCell.transform.position = new Vector3(startX, wallCell.transform.position.y, currentZ);
+            wallCell.transform.Rotate(0, 90, 0);
+
+            CellController wallCellController = wallCell.GetComponent<CellController>();
+            wallCellController.Initialize(new Position(positionX, i), true, true, true, true);
+            _wallCellControllers[columnIndex, i] = wallCellController;
+
+            currentZ += WallCellSpacing;
+        }
+    }
+
 
     private void CreatePlayers()
     {
-        _playerControllers = new PlayerController[gameType == GameType.FourPlayers ? 4 : 2];
-        _playerControllers[0] = Instantiate(player1Prefab).GetComponent<PlayerController>();
-        _playerControllers[1] = Instantiate(player2Prefab).GetComponent<PlayerController>();
-        if (gameType == GameType.FourPlayers)
+        _playerControllers = new PlayerController[_playersCount];
+        for (int i = 0; i < _playersCount; i++)
         {
-            _playerControllers[2] = Instantiate(player3Prefab).GetComponent<PlayerController>();
-            _playerControllers[3] = Instantiate(player4Prefab).GetComponent<PlayerController>();
-        }
-        
-        foreach (PlayerController playerController in _playerControllers)
-        {
+            PlayerController playerController = Instantiate(playerPrefabs[i]).GetComponent<PlayerController>();
             Position position = playerController.PlayerPosition;
-            _cells[position.X, position.Z].ContainsPlayer = true;
+            _playerControllers[i] = playerController;
+
+            _cellControllers[position.X, position.Z].ContainsPlayer = true;
         }
     }
+
 
     private void CreateWalls()
     {
-        int wallsCount = (gameType == GameType.TwoPlayers) ? 10 : 5;
+        CreateWallRow(-WallHorizontalOffset, -WallVerticalOffset, WallSpacing, PlayerNumber.PlayerOne);
+        CreateWallRow(WallHorizontalOffset, WallVerticalOffset, -WallSpacing, PlayerNumber.PlayerTwo);
+        CreateWallColumn(-WallVerticalOffset, WallHorizontalOffset, -WallSpacing, PlayerNumber.PlayerThree);
+        CreateWallColumn(WallVerticalOffset, -WallHorizontalOffset, WallSpacing, PlayerNumber.PlayerFour);
+    }
 
-        PlayerNumber ownerNumber = PlayerNumber.PlayerOne;
-        float currentX = -WallInitPos;
-        float currentZ = -WallInitDisplacement;
-        for (int i = 0; i < wallsCount; i++)
+    private void CreateWallRow(float startX, float startZ, float xChange, PlayerNumber ownerNumber)
+    {
+        float currentX = startX;
+        for (int i = 0; i < _wallsCount; i++)
         {
             GameObject wall = Instantiate(wallPrefab);
-            wall.transform.position = new Vector3(currentX, wall.transform.position.y, currentZ);
+            wall.transform.position = new Vector3(currentX, wall.transform.position.y, startZ);
             wall.GetComponent<WallController>().Initialize(ownerNumber);
 
-            currentX += WallSpacing;
-        }
-
-        ownerNumber = PlayerNumber.PlayerTwo;
-        currentX = WallInitPos;
-        currentZ = WallInitDisplacement;
-        for (int i = 0; i < wallsCount; i++)
-        {
-            GameObject wall = Instantiate(wallPrefab);
-            wall.transform.position = new Vector3(currentX, wall.transform.position.y, currentZ);
-            wall.GetComponent<WallController>().Initialize(ownerNumber);
-
-            currentX -= WallSpacing;
-        }
-
-        if (gameType == GameType.FourPlayers)
-        {
-            ownerNumber = PlayerNumber.PlayerThree;
-            currentX = -WallInitDisplacement;
-            currentZ = WallInitPos;
-            for (int i = 0; i < wallsCount; i++)
-            {
-                GameObject wall = Instantiate(wallPrefab);
-                wall.transform.position = new Vector3(currentX, wall.transform.position.y, currentZ);
-                wall.transform.Rotate(0, 90, 0);
-                wall.GetComponent<WallController>().Initialize(ownerNumber);
-
-                currentZ -= WallSpacing;
-            }
-
-            ownerNumber = PlayerNumber.PlayerFour;
-            currentX = WallInitDisplacement;
-            currentZ = -WallInitPos;
-            for (int i = 0; i < wallsCount; i++)
-            {
-                GameObject wall = Instantiate(wallPrefab);
-                wall.transform.position = new Vector3(currentX, wall.transform.position.y, currentZ);
-                wall.transform.Rotate(0, 90, 0);
-                wall.GetComponent<WallController>().Initialize(ownerNumber);
-
-                currentZ += WallSpacing;
-            }
+            currentX += xChange;
         }
     }
+
+    private void CreateWallColumn(float startX, float startZ, float zChange, PlayerNumber ownerNumber)
+    {
+        float currentZ = startZ;
+        for (int i = 0; i < _wallsCount; i++)
+        {
+            GameObject wall = Instantiate(wallPrefab);
+            wall.transform.position = new Vector3(startX, wall.transform.position.y, currentZ);
+            wall.transform.Rotate(0, 90, 0);
+            wall.GetComponent<WallController>().Initialize(ownerNumber);
+
+            currentZ += zChange;
+        }
+    }
+
 
     private void CreateWallPlaces()
     {
@@ -227,6 +193,7 @@ public class GameManager : MonoBehaviour
             {
                 GameObject wallPlace = Instantiate(wallPlacePrefab);
                 wallPlace.transform.position = new Vector3(currentXPos, wallPlace.transform.position.y, currentZPos);
+
                 WallPlaceController wallPlaceController = wallPlace.GetComponent<WallPlaceController>();
                 wallPlaceController.Initialize(new Position(x, z));
                 _wallPlaceControllers[x, z] = wallPlaceController;
@@ -238,26 +205,29 @@ public class GameManager : MonoBehaviour
             currentXPos = WallPlaceLeftDownPos;
         }
     }
-    
+
 
     [UsedImplicitly]
     private void OnSelectPlayer()
     {
-        PlayerController currentPlayerController = _playerControllers[(int) currentPlayer];
+        PlayerController currentPlayerController = _playerControllers[(int) currentPlayerNumber];
         if (currentPlayerController.CanBeInteractedWith())
         {
             currentPlayerController.Select();
+            ShowReachableCells(currentPlayerController.PlayerPosition);
         }
     }
 
     [UsedImplicitly]
     private void OnDeselect()
     {
-        PlayerController player = _playerControllers[(int) currentPlayer];
+        PlayerController player = _playerControllers[(int) currentPlayerNumber];
         if (player.IsSelected)
         {
             player.Deselect();
-        } else if (selectedWall != null)
+            HideSelectableCells();
+        }
+        else if (selectedWall != null)
         {
             DeselectWall();
         }
@@ -266,33 +236,26 @@ public class GameManager : MonoBehaviour
     [UsedImplicitly]
     private void OnRotateWall()
     {
-        if (ghostWall.activeSelf)
+        if (_ghostWallController.gameObject.activeSelf)
         {
-            ghostWall.transform.Rotate(0, 90, 0);
-            _isGhostWallHorizontal = !_isGhostWallHorizontal;
-            ValidateGhostWall();
+            _ghostWallController.Rotate();
+            _ghostWallController.SetValid(IsWallPlaceValid());
         }
     }
 
     [UsedImplicitly]
     private void OnPlaceWall()
     {
-        if (activeWallPlaceController != null && IsWallPlaceValid())
+        if (_activeWallPlaceController != null && _ghostWallController.IsValid)
         {
             PlaceWall();
         }
     }
 
 
-    public void InitPlayerPosition(Position playerPosition)
+    public void ShowReachableCells(Position originPosition)
     {
-        _cells[playerPosition.X, playerPosition.Z].ContainsPlayer = true;
-    }
-
-
-    public void ShowSelectableCells(Position originPosition)
-    {
-        CellController cellController = _cells[originPosition.X, originPosition.Z];
+        CellController cellController = _cellControllers[originPosition.X, originPosition.Z];
         CheckDirection(cellController, Direction.Up, originPosition.Up());
         CheckDirection(cellController, Direction.Right, originPosition.Right());
         CheckDirection(cellController, Direction.Down, originPosition.Down());
@@ -301,143 +264,105 @@ public class GameManager : MonoBehaviour
 
     private void CheckDirection(CellController cellController, Direction direction, Position targetPosition)
     {
-        bool isJumping = false;
+        bool needJumping = false;
         while (!cellController.IsBlocked(direction))
         {
             {
-                CellController selectableCell = _cells[targetPosition.X, targetPosition.Z];
-                if (selectableCell.ContainsPlayer)
+                CellController reachableCell = _cellControllers[targetPosition.X, targetPosition.Z];
+                if (reachableCell.ContainsPlayer)
                 {
-                    cellController = selectableCell;
+                    // if the cell contains a player, check the next cell.
+                    cellController = reachableCell;
                     targetPosition = targetPosition.GetDirectionPosition(direction);
-                    isJumping = true;
+                    needJumping = true;
                 }
                 else
                 {
-                    selectableCell.IsReachable = true;
-                    selectableCell.NeedJumping = isJumping;
-                    selectableCell.SetLayer(LayerMask.NameToLayer("HighlightSelectable"));
-                    _selectableCells.Add(selectableCell);
+                    reachableCell.SetReachable(needJumping);
+                    _reachableCells.Add(reachableCell);
                     break;
                 }
             }
         }
 
-        if ((int) direction == (int) currentPlayer)
+        // check if target position is a finishing cell
+        if ((int) direction == (int) currentPlayerNumber)
         {
-            CellController selectableCell = null;
+            CellController reachableCell = null;
             if (targetPosition.X < 0 || targetPosition.X > 8)
             {
-                selectableCell = _wallCells[(int) currentPlayer, targetPosition.Z];
+                reachableCell = _wallCellControllers[(int) currentPlayerNumber, targetPosition.Z];
             }
             else if (targetPosition.Z < 0 || targetPosition.Z > 8)
             {
-                selectableCell = _wallCells[(int) currentPlayer, targetPosition.X];
+                reachableCell = _wallCellControllers[(int) currentPlayerNumber, targetPosition.X];
             }
 
-            if (selectableCell != null)
+            if (reachableCell != null)
             {
-                selectableCell.IsReachable = true;
-                selectableCell.NeedJumping = isJumping;
-                selectableCell.SetLayer(LayerMask.NameToLayer("HighlightSelectable"));
-                _selectableCells.Add(selectableCell);
+                reachableCell.SetReachable(needJumping);
+                _reachableCells.Add(reachableCell);
             }
         }
     }
 
-    public void HideSelectableCells()
+    private void HideSelectableCells()
     {
-        foreach (CellController cellController in _selectableCells)
+        foreach (CellController reachableCellController in _reachableCells)
         {
-            cellController.IsReachable = false;
-            cellController.SetLayer(LayerMask.NameToLayer("Default"));
+            reachableCellController.ResetReachable();
         }
 
-        _selectableCells.Clear();
+        _reachableCells.Clear();
     }
 
 
     public bool IsCurrentPlayerSelected()
     {
-        return _playerControllers[(int) currentPlayer].IsSelected;
+        return _playerControllers[(int) currentPlayerNumber].IsSelected;
     }
 
-    public void MovePlayer(Position cellPosition, bool isJumping)
+    public void MovePlayer(CellController targetCellController)
     {
-        PlayerController playerController = _playerControllers[(int) currentPlayer];
-        Vector3 targetPosition = new Vector3(
-            cellPosition.X * CellSpacing + CellInitPos,
-            playerController.transform.position.y,
-            cellPosition.Z * CellSpacing + CellInitPos);
-        StartCoroutine(JumpOverSeconds(playerController.gameObject, targetPosition, 0.8f,
-            isJumping ? jumpHeight : moveHeight));
-
-        _cells[playerController.PlayerPosition.X, playerController.PlayerPosition.Z].ContainsPlayer = false;
+        PlayerController playerController = _playerControllers[(int) currentPlayerNumber];
+        Position cellPosition = targetCellController.CellPosition;
+        CellController baseCellController =
+            _cellControllers[playerController.PlayerPosition.X, playerController.PlayerPosition.Z];
+        baseCellController.ContainsPlayer = false;
         if (cellPosition.X >= 0 && cellPosition.X <= 8 && cellPosition.Z >= 0 && cellPosition.Z <= 8)
         {
-            _cells[cellPosition.X, cellPosition.Z].ContainsPlayer = true;
+            targetCellController.ContainsPlayer = true;
         }
         else
         {
             playerController.IsFinished = true;
         }
 
-        playerController.PlayerPosition = cellPosition;
-        playerController.Deselect();
-        HideSelectableCells();
+        Vector3 targetPosition = new Vector3(
+            cellPosition.X * CellSpacing + CellLeftDownPos,
+            playerController.transform.position.y,
+            cellPosition.Z * CellSpacing + CellLeftDownPos);
+        playerController.Move(targetCellController.CellPosition, targetPosition, targetCellController.NeedJumping);
 
+
+        HideSelectableCells();
         NextTurn();
     }
 
-    private static IEnumerator JumpOverSeconds(GameObject objectToMove, Vector3 endPos, float seconds, float height)
-    {
-        Vector3 startPos = objectToMove.transform.position;
-        float distance = Vector3.Distance(endPos, startPos);
-        float elapsedTime = 0.0f;
-        while (elapsedTime < seconds)
-        {
-            objectToMove.transform.position =
-                Vector3.Lerp(startPos, endPos, Mathf.SmoothStep(0.0f, 1.0f, Easing.InOutSine(elapsedTime / seconds)));
-            // float timeRatio = Mathf.SmoothStep(0.0f, seconds, elapsedTime) / seconds;
-            float horizontalDistanceCovered = Vector3.Distance(startPos, objectToMove.transform.position);
-            float distanceRatio = horizontalDistanceCovered / distance;
-            objectToMove.transform.position += new Vector3(0, -4 * height * distanceRatio * (distanceRatio - 1), 0);
-
-            elapsedTime += Time.deltaTime;
-            yield return new WaitForEndOfFrame();
-        }
-
-        objectToMove.transform.position = endPos;
-    }
-
-
-    public void SelectWall(WallController wallController)
-    {
-        if (selectedWall == null)
-        {
-            _playerControllers[(int) currentPlayer].Deselect();
-
-            wallController.Select();
-            selectedWall = wallController;
-        }
-    }
-
+    
     private void DeselectWall()
     {
         selectedWall.Deselect();
         selectedWall = null;
-        activeWallPlaceController = null;
-        ghostWall.SetActive(false);
+        _activeWallPlaceController = null;
+        _ghostWallController.gameObject.SetActive(false);
     }
 
     private void PlaceWall()
     {
-        activeWallPlaceController.ContainsWall = true;
-        selectedWall.transform.position = ghostWall.transform.position;
-        selectedWall.transform.rotation = ghostWall.transform.rotation;
-        selectedWall.GetComponent<BoxCollider>().enabled = false;
-        selectedWall.IsPlaced = true;
-        UpdateCells(activeWallPlaceController.Position, true);
+        _activeWallPlaceController.ContainsWall = true;
+        selectedWall.PlaceWall(_ghostWallController.transform.position, _ghostWallController.transform.rotation);
+        UpdateCells(_activeWallPlaceController.Position, true);
         DeselectWall();
         NextTurn();
     }
@@ -447,63 +372,53 @@ public class GameManager : MonoBehaviour
     {
         if (selectedWall != null)
         {
-            ghostWall.SetActive(true);
-            activeWallPlaceController = wallPlaceController;
-
-            Vector3 position = wallPlaceController.gameObject.transform.position;
-            ghostWall.transform.position = new Vector3(position.x, ghostWall.transform.position.y, position.z);
-
-            ValidateGhostWall();
+            _activeWallPlaceController = wallPlaceController;
+            _ghostWallController.Move(wallPlaceController.transform.position);
+            _ghostWallController.SetValid(IsWallPlaceValid());
         }
-    }
-
-    private void ValidateGhostWall()
-    {
-        ghostWall.GetComponent<Renderer>().material =
-            IsWallPlaceValid() ? _ghostWallDefaultMaterial : ghostWallInvalidMaterial;
     }
 
     private bool IsWallPlaceValid()
     {
-        if (activeWallPlaceController == null)
+        if (_activeWallPlaceController == null)
         {
             return false;
         }
 
-        int wallPlaceX = activeWallPlaceController.Position.X;
-        int wallPlaceZ = activeWallPlaceController.Position.Z;
+        int wallPlaceX = _activeWallPlaceController.Position.X;
+        int wallPlaceZ = _activeWallPlaceController.Position.Z;
         if (_wallPlaceControllers[wallPlaceX, wallPlaceZ].ContainsWall)
         {
             return false;
         }
 
         bool result;
-        if (_isGhostWallHorizontal)
+        if (_ghostWallController.IsHorizontal)
         {
-            result = !_cells[wallPlaceX, wallPlaceZ].IsBlocked(Direction.Up) &&
-                     !_cells[wallPlaceX + 1, wallPlaceZ].IsBlocked(Direction.Up);
+            result = !_cellControllers[wallPlaceX, wallPlaceZ].IsBlocked(Direction.Up) &&
+                     !_cellControllers[wallPlaceX + 1, wallPlaceZ].IsBlocked(Direction.Up);
         }
         else
         {
-            result = !_cells[wallPlaceX, wallPlaceZ].IsBlocked(Direction.Right) &&
-                     !_cells[wallPlaceX, wallPlaceZ + 1].IsBlocked(Direction.Right);
+            result = !_cellControllers[wallPlaceX, wallPlaceZ].IsBlocked(Direction.Right) &&
+                     !_cellControllers[wallPlaceX, wallPlaceZ + 1].IsBlocked(Direction.Right);
         }
 
         if (result)
         {
-            UpdateCells(activeWallPlaceController.Position, true);
-            for (int i = 0; i < (gameType == GameType.FourPlayers ? 4 : 2); i++)
+            UpdateCells(_activeWallPlaceController.Position, true);
+            for (int i = 0; i < _playersCount; i++)
             {
                 PlayerController playerController = _playerControllers[i];
                 if (playerController.IsFinished) continue;
                 if (!HasPathToEnd((PlayerNumber) i, playerController.PlayerPosition))
                 {
-                    UpdateCells(activeWallPlaceController.Position, false);
+                    UpdateCells(_activeWallPlaceController.Position, false);
                     return false;
                 }
             }
 
-            UpdateCells(activeWallPlaceController.Position, false);
+            UpdateCells(_activeWallPlaceController.Position, false);
             return true;
         }
 
@@ -529,61 +444,51 @@ public class GameManager : MonoBehaviour
 
         isVisitedArray[position.X, position.Z] = true;
         Queue<CellController> nextControllers = new Queue<CellController>();
-        nextControllers.Enqueue(_cells[position.X, position.Z]);
+        nextControllers.Enqueue(_cellControllers[position.X, position.Z]);
         while (nextControllers.Count != 0)
         {
             CellController currentController = nextControllers.Dequeue();
             if (!currentController.IsBlocked(Direction.Up))
             {
                 CellController controller =
-                    _cells[currentController.CellPosition.X, currentController.CellPosition.Z + 1];
-                if (!isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z])
-                {
-                    isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z] = true;
-                    if (IsFinishPosition(playerNumber, controller.CellPosition)) return true;
-
-                    nextControllers.Enqueue(controller);
-                }
+                    _cellControllers[currentController.CellPosition.X, currentController.CellPosition.Z + 1];
+                if (CheckCell(playerNumber, isVisitedArray, controller, nextControllers)) return true;
             }
 
             if (!currentController.IsBlocked(Direction.Down))
             {
                 CellController controller =
-                    _cells[currentController.CellPosition.X, currentController.CellPosition.Z - 1];
-                if (!isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z])
-                {
-                    isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z] = true;
-                    if (IsFinishPosition(playerNumber, controller.CellPosition)) return true;
-
-                    nextControllers.Enqueue(controller);
-                }
+                    _cellControllers[currentController.CellPosition.X, currentController.CellPosition.Z - 1];
+                if (CheckCell(playerNumber, isVisitedArray, controller, nextControllers)) return true;
             }
 
             if (!currentController.IsBlocked(Direction.Right))
             {
                 CellController controller =
-                    _cells[currentController.CellPosition.X + 1, currentController.CellPosition.Z];
-                if (!isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z])
-                {
-                    isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z] = true;
-                    if (IsFinishPosition(playerNumber, controller.CellPosition)) return true;
-
-                    nextControllers.Enqueue(controller);
-                }
+                    _cellControllers[currentController.CellPosition.X + 1, currentController.CellPosition.Z];
+                if (CheckCell(playerNumber, isVisitedArray, controller, nextControllers)) return true;
             }
 
             if (!currentController.IsBlocked(Direction.Left))
             {
                 CellController controller =
-                    _cells[currentController.CellPosition.X - 1, currentController.CellPosition.Z];
-                if (!isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z])
-                {
-                    isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z] = true;
-                    if (IsFinishPosition(playerNumber, controller.CellPosition)) return true;
-
-                    nextControllers.Enqueue(controller);
-                }
+                    _cellControllers[currentController.CellPosition.X - 1, currentController.CellPosition.Z];
+                if (CheckCell(playerNumber, isVisitedArray, controller, nextControllers)) return true;
             }
+        }
+
+        return false;
+    }
+
+    private static bool CheckCell(PlayerNumber playerNumber, bool[,] isVisitedArray, CellController controller,
+        Queue<CellController> nextControllers)
+    {
+        if (!isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z])
+        {
+            isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z] = true;
+            if (IsFinishPosition(playerNumber, controller.CellPosition)) return true;
+
+            nextControllers.Enqueue(controller);
         }
 
         return false;
@@ -605,34 +510,33 @@ public class GameManager : MonoBehaviour
     {
         int placedWallX = placedWallPosition.X;
         int placedWallZ = placedWallPosition.Z;
-        if (_isGhostWallHorizontal)
+        if (_ghostWallController.IsHorizontal)
         {
-            _cells[placedWallX, placedWallZ].SetBlocked(Direction.Up, isBlocked);
-            _cells[placedWallX + 1, placedWallZ].SetBlocked(Direction.Up, isBlocked);
-            _cells[placedWallX, placedWallZ + 1].SetBlocked(Direction.Down, isBlocked);
-            _cells[placedWallX + 1, placedWallZ + 1].SetBlocked(Direction.Down, isBlocked);
+            _cellControllers[placedWallX, placedWallZ].SetBlocked(Direction.Up, isBlocked);
+            _cellControllers[placedWallX + 1, placedWallZ].SetBlocked(Direction.Up, isBlocked);
+            _cellControllers[placedWallX, placedWallZ + 1].SetBlocked(Direction.Down, isBlocked);
+            _cellControllers[placedWallX + 1, placedWallZ + 1].SetBlocked(Direction.Down, isBlocked);
         }
         else
         {
-            _cells[placedWallX, placedWallZ].SetBlocked(Direction.Right, isBlocked);
-            _cells[placedWallX, placedWallZ + 1].SetBlocked(Direction.Right, isBlocked);
-            _cells[placedWallX + 1, placedWallZ].SetBlocked(Direction.Left, isBlocked);
-            _cells[placedWallX + 1, placedWallZ + 1].SetBlocked(Direction.Left, isBlocked);
+            _cellControllers[placedWallX, placedWallZ].SetBlocked(Direction.Right, isBlocked);
+            _cellControllers[placedWallX, placedWallZ + 1].SetBlocked(Direction.Right, isBlocked);
+            _cellControllers[placedWallX + 1, placedWallZ].SetBlocked(Direction.Left, isBlocked);
+            _cellControllers[placedWallX + 1, placedWallZ + 1].SetBlocked(Direction.Left, isBlocked);
         }
     }
 
 
     private void NextTurn()
     {
-        int playersCount = gameType == GameType.FourPlayers ? 4 : 2;
         int cycleCount = 0;
         do
         {
-            currentPlayer = (PlayerNumber) (((int) currentPlayer + 1) % playersCount);
+            currentPlayerNumber = (PlayerNumber) (((int) currentPlayerNumber + 1) % _playersCount);
             cycleCount += 1;
-        } while (_playerControllers[(int) currentPlayer].IsFinished && cycleCount <= playersCount);
+        } while (_playerControllers[(int) currentPlayerNumber].IsFinished && cycleCount <= _playersCount);
 
-        if (cycleCount > playersCount)
+        if (cycleCount > _playersCount)
         {
             Debug.Log("Game Finished!");
         }

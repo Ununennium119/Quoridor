@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6553014648324752725}
   - component: {fileID: 7881061368984177392}
   - component: {fileID: 5385127331986406970}
+  - component: {fileID: -1754930692551530494}
   m_Layer: 0
   m_Name: GhostWall
   m_TagString: Untagged
@@ -81,3 +82,16 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &-1754930692551530494
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5889350101870338031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b45383096c54124b7046364e387a70e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ghostWallInvalidMaterial: {fileID: 2100000, guid: c715d9a24a99e07469ab9591b0b14198, type: 2}

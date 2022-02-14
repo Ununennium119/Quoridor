@@ -101,8 +101,29 @@ public class CellController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     {
         if (IsReachable)
         {
-            _gameManager.MovePlayer(CellPosition, NeedJumping);
+            _gameManager.MovePlayer(this);
         }
+    }
+
+
+    /// <summary>
+    /// Sets the cell as reachable.
+    /// </summary>
+    /// <param name="needJumping"></param>
+    public void SetReachable(bool needJumping)
+    {        
+        IsReachable = true;
+        NeedJumping = needJumping;
+        SetLayer(LayerMask.NameToLayer("HighlightSelectable"));
+    }
+
+    /// <summary>
+    /// Sets the cell as unreachable
+    /// </summary>
+    public void ResetReachable()
+    {
+        IsReachable = false;
+        SetLayer(LayerMask.NameToLayer("Default"));
     }
 
 

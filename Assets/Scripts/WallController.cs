@@ -34,8 +34,7 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!_isSelected && !IsPlaced && _gameManager.currentPlayer == _ownerNumber &&
-            _gameManager.selectedWall == null && !_gameManager.IsCurrentPlayerSelected())
+        if (!_isSelected && CanBeInteractedWith())
         {
             SetLayer(LayerMask.NameToLayer("HighlightHover"));
         }
@@ -43,8 +42,7 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (!_isSelected && !IsPlaced && _gameManager.currentPlayer == _ownerNumber &&
-            !_gameManager.IsCurrentPlayerSelected())
+        if (!_isSelected && CanBeInteractedWith())
         {
             SetLayer(LayerMask.NameToLayer("Default"));
         }
@@ -52,17 +50,28 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (!IsPlaced && _gameManager.currentPlayer == _ownerNumber && !_gameManager.IsCurrentPlayerSelected())
+        if (CanBeInteractedWith())
         {
-            _gameManager.SelectWall(this);
+            Select();
+            _gameManager.selectedWall = this;
         }
+    }
+
+
+    /// <returns>A boolean that shows wall's interactability.</returns>
+    private bool CanBeInteractedWith()
+    {
+        return !_isPlaced &&
+               _gameManager.selectedWall == null &&
+               _gameManager.currentPlayerNumber == _ownerNumber &&
+               !_gameManager.IsCurrentPlayerSelected();
     }
 
 
     /// <summary>
     /// Set's the wall as selected.
     /// </summary>
-    public void Select()
+    private void Select()
     {
         _isSelected = true;
         SetLayer(LayerMask.NameToLayer("HighlightSelected"));
@@ -84,5 +93,14 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     private void SetLayer(int layer)
     {
         gameObject.layer = layer;
+    }
+
+
+    public void PlaceWall(Vector3 position, Quaternion rotation)
+    {
+        transform.position = position;
+        transform.rotation = rotation;
+        GetComponent<BoxCollider>().enabled = false;
+        _isPlaced = true;
     }
 }
