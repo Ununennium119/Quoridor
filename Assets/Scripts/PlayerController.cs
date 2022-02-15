@@ -11,36 +11,25 @@ public class PlayerController : MonoBehaviour, IPointerEnterHandler, IPointerExi
     private const float MoveHeight = 0.2f;
     private const float JumpHeight = 1.3f;
     private GameManager _gameManager;
-    private bool _isSelected = false;
-    private bool _isFinished = false;
 
     /// <value>Represents the player's position in board.</value>
     public Position PlayerPosition
     {
         get => playerPosition;
-        set => playerPosition = value;
+        private set => playerPosition = value;
     }
 
     /// <value>Specifies whether the player is selected or not.</value>
-    public bool IsSelected
-    {
-        get => _isSelected;
-        private set => _isSelected = value;
-    }
+    public bool IsSelected { get; private set; } = false;
 
     /// <value>Specifies whether the player has reached a finishing position or not.</value>
-    public bool IsFinished
-    {
-        get => _isFinished;
-        set => _isFinished = value;
-    }
+    public bool IsFinished { get; set; } = false;
 
 
     private void Awake()
     {
         _gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
-
 
     public void OnPointerEnter(PointerEventData eventData)
     {
@@ -63,7 +52,7 @@ public class PlayerController : MonoBehaviour, IPointerEnterHandler, IPointerExi
         if (CanBeInteractedWith())
         {
             Select();
-            _gameManager.ShowReachableCells(playerPosition);
+            _gameManager.ShowReachableCells(PlayerPosition);
         }
     }
 
@@ -111,10 +100,16 @@ public class PlayerController : MonoBehaviour, IPointerEnterHandler, IPointerExi
     }
 
 
+    /// <summary>
+    /// Moves the player to the target <paramref name="position"/>.
+    /// </summary>
+    /// <param name="boardPosition">target board position.</param>
+    /// <param name="position">target position.</param>
+    /// <param name="needJumping">need jumping to reach target cell or not.</param>
     public void Move(Position boardPosition, Vector3 position, bool needJumping)
     {
         StartCoroutine(MoveOverSeconds(position, MoveDuration, needJumping ? JumpHeight : MoveHeight));
-        playerPosition = boardPosition;
+        PlayerPosition = boardPosition;
         Deselect();
     }
 

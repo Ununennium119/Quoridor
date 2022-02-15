@@ -1,16 +1,15 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GhostWallController : MonoBehaviour
 {
-    private bool _isHorizontal = false;
-    private bool _isValid = false;
     private Material _ghostWallDefaultMaterial;
     [SerializeField] private Material ghostWallInvalidMaterial;
 
-    public bool IsHorizontal => _isHorizontal;
+    /// <value>Specifies whether the ghost wall is horizontal or vertical.</value>
+    public bool IsHorizontal { get; private set; } = false;
 
-    public bool IsValid => _isValid;
+    /// <value>Specifies whether the ghost wall is valid or not.</value>
+    public bool IsValid { get; private set; } = false;
 
 
     private void Awake()
@@ -19,22 +18,33 @@ public class GhostWallController : MonoBehaviour
         _ghostWallDefaultMaterial = GetComponent<Renderer>().material;
     }
 
+
+    /// <summary>
+    /// Rotates the ghost wall 90 degrees.
+    /// </summary>
     public void Rotate()
     {
         transform.Rotate(0, 90, 0);
-        _isHorizontal = !_isHorizontal;
+        IsHorizontal = !IsHorizontal;
     }
 
+    /// <summary>
+    /// Moves the ghost wall to the given <paramref name="position"/>.
+    /// </summary>
+    /// <param name="position"></param>
     public void Move(Vector3 position)
     {
         transform.position = new Vector3(position.x, transform.position.y, position.z);
         gameObject.SetActive(true);
     }
 
-
+    /// <summary>
+    /// Sets the ghost wall validation as <paramref name="isValid"/>.
+    /// </summary>
+    /// <param name="isValid"></param>
     public void SetValid(bool isValid)
     {
         GetComponent<Renderer>().material = isValid ? _ghostWallDefaultMaterial : ghostWallInvalidMaterial;
-        _isValid = isValid;
+        IsValid = isValid;
     }
 }

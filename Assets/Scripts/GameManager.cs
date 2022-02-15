@@ -486,7 +486,10 @@ public class GameManager : MonoBehaviour
         if (!isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z])
         {
             isVisitedArray[controller.CellPosition.X, controller.CellPosition.Z] = true;
-            if (IsFinishPosition(playerNumber, controller.CellPosition)) return true;
+            if (IsFinishPosition(playerNumber, controller.CellPosition))
+            {
+                return true;
+            }
 
             nextControllers.Enqueue(controller);
         }

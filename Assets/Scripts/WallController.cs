@@ -4,16 +4,15 @@ using UnityEngine.EventSystems;
 public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     private GameManager _gameManager;
-    private PlayerNumber _ownerNumber;
-    private bool _isPlaced = false;
-    private bool _isSelected = false;
+
+    /// <value>Represents the wall owner player number.</value>
+    public PlayerNumber OwnerNumber { get; private set; }
+
+    /// <value>Specifies whether the wall is selected or not.</value>
+    public bool IsSelected { get; private set; } = false;
 
     /// <value>Specifies whether the wall is places on board or not.</value>
-    public bool IsPlaced
-    {
-        get => _isPlaced;
-        set => _isPlaced = value;
-    }
+    public bool IsPlaced { get; private set; } = false;
 
 
     private void Awake()
@@ -21,20 +20,9 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         _gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
-    /// <summary>
-    /// Initializes necessary fields of the wall.
-    /// Must be called after creating an instance.
-    /// </summary>
-    /// <param name="ownerNumber"></param>
-    public void Initialize(PlayerNumber ownerNumber)
-    {
-        _ownerNumber = ownerNumber;
-    }
-
-
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!_isSelected && CanBeInteractedWith())
+        if (!IsSelected && CanBeInteractedWith())
         {
             SetLayer(LayerMask.NameToLayer("HighlightHover"));
         }
@@ -42,7 +30,7 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (!_isSelected && CanBeInteractedWith())
+        if (!IsSelected && CanBeInteractedWith())
         {
             SetLayer(LayerMask.NameToLayer("Default"));
         }
@@ -58,12 +46,23 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     }
 
 
+    /// <summary>
+    /// Initializes necessary fields of the wall.
+    /// Must be called after creating an instance.
+    /// </summary>
+    /// <param name="ownerNumber"></param>
+    public void Initialize(PlayerNumber ownerNumber)
+    {
+        OwnerNumber = ownerNumber;
+    }
+
+
     /// <returns>A boolean that shows wall's interactability.</returns>
     private bool CanBeInteractedWith()
     {
-        return !_isPlaced &&
+        return !IsPlaced &&
                _gameManager.selectedWall == null &&
-               _gameManager.currentPlayerNumber == _ownerNumber &&
+               _gameManager.currentPlayerNumber == OwnerNumber &&
                !_gameManager.IsCurrentPlayerSelected();
     }
 
@@ -73,7 +72,7 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     /// </summary>
     private void Select()
     {
-        _isSelected = true;
+        IsSelected = true;
         SetLayer(LayerMask.NameToLayer("HighlightSelected"));
     }
 
@@ -82,7 +81,7 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     /// </summary>
     public void Deselect()
     {
-        _isSelected = false;
+        IsSelected = false;
         SetLayer(LayerMask.NameToLayer("Default"));
     }
 
@@ -95,12 +94,16 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         gameObject.layer = layer;
     }
 
-
+    /// <summary>
+    /// Moves the wall at the given <paramref name="position"/> and <paramref name="rotation"/>. 
+    /// </summary>
+    /// <param name="position"></param>
+    /// <param name="rotation"></param>
     public void PlaceWall(Vector3 position, Quaternion rotation)
     {
         transform.position = position;
         transform.rotation = rotation;
         GetComponent<BoxCollider>().enabled = false;
-        _isPlaced = true;
+        IsPlaced = true;
     }
 }
