@@ -11,17 +11,20 @@ public class GameManager : MonoBehaviour
     private readonly CellController[,] _cellControllers = new CellController[9, 9];
     private readonly List<CellController> _reachableCells = new List<CellController>();
     [SerializeField] private GameObject cellPrefab;
+    [SerializeField] private GameObject cellsParent;
 
     private const float WallCellHorizontalOffset = 8.4f;
     private const float WallCellVerticalOffset = 11.5f;
     private const float WallCellSpacing = 2.1f;
     private readonly CellController[,] _wallCellControllers = new CellController[4, 9];
     [SerializeField] private GameObject wallCellPrefab;
+    [SerializeField] private GameObject wallCellsParent;
 
     public PlayerNumber currentPlayerNumber = PlayerNumber.PlayerOne;
     private int _playersCount;
     private PlayerController[] _playerControllers;
     [SerializeField] private GameObject[] playerPrefabs;
+    [SerializeField] private GameObject playersParent;
 
     public WallController selectedWall;
     private const float WallHorizontalOffset = 9.45f;
@@ -29,12 +32,14 @@ public class GameManager : MonoBehaviour
     private const float WallSpacing = 2.1f;
     private int _wallsCount;
     [SerializeField] private GameObject wallPrefab;
+    [SerializeField] private GameObject wallsParent;
 
     private const float WallPlaceLeftDownPos = -7.35f;
     private const float WallPlaceSpacing = 2.1f;
     private readonly WallPlaceController[,] _wallPlaceControllers = new WallPlaceController[8, 8];
     private WallPlaceController _activeWallPlaceController;
     [SerializeField] private GameObject wallPlacePrefab;
+    [SerializeField] private GameObject wallPlacesParent;
 
     private GhostWallController _ghostWallController;
     [SerializeField] private GameObject ghostWallPrefab;
@@ -56,7 +61,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        GameObject ghostWall = Instantiate(ghostWallPrefab);
+        GameObject ghostWall = Instantiate(ghostWallPrefab, wallsParent.transform);
         _ghostWallController = ghostWall.GetComponent<GhostWallController>();
 
         CreateCells();
@@ -75,7 +80,7 @@ public class GameManager : MonoBehaviour
         {
             for (int x = 0; x < 9; x++)
             {
-                GameObject cell = Instantiate(cellPrefab);
+                GameObject cell = Instantiate(cellPrefab, cellsParent.transform);
                 cell.transform.position = new Vector3(currentXPos, cell.transform.position.y, currentZPos);
 
                 CellController cellController = cell.GetComponent<CellController>();
@@ -104,7 +109,7 @@ public class GameManager : MonoBehaviour
         float currentX = -WallCellHorizontalOffset;
         for (int i = 0; i < 9; i++)
         {
-            GameObject wallCell = Instantiate(wallCellPrefab);
+            GameObject wallCell = Instantiate(wallCellPrefab, wallCellsParent.transform);
             wallCell.transform.position = new Vector3(currentX, wallCell.transform.position.y, startZ);
 
             CellController wallCellController = wallCell.GetComponent<CellController>();
@@ -120,7 +125,7 @@ public class GameManager : MonoBehaviour
         float currentZ = -WallCellHorizontalOffset;
         for (int i = 0; i < 9; i++)
         {
-            GameObject wallCell = Instantiate(wallCellPrefab);
+            GameObject wallCell = Instantiate(wallCellPrefab, wallCellsParent.transform);
             wallCell.transform.position = new Vector3(startX, wallCell.transform.position.y, currentZ);
             wallCell.transform.Rotate(0, 90, 0);
 
@@ -138,7 +143,8 @@ public class GameManager : MonoBehaviour
         _playerControllers = new PlayerController[_playersCount];
         for (int i = 0; i < _playersCount; i++)
         {
-            PlayerController playerController = Instantiate(playerPrefabs[i]).GetComponent<PlayerController>();
+            PlayerController playerController =
+                Instantiate(playerPrefabs[i], playersParent.transform).GetComponent<PlayerController>();
             Position position = playerController.PlayerPosition;
             _playerControllers[i] = playerController;
 
@@ -160,7 +166,7 @@ public class GameManager : MonoBehaviour
         float currentX = startX;
         for (int i = 0; i < _wallsCount; i++)
         {
-            GameObject wall = Instantiate(wallPrefab);
+            GameObject wall = Instantiate(wallPrefab, wallsParent.transform);
             wall.transform.position = new Vector3(currentX, wall.transform.position.y, startZ);
             wall.GetComponent<WallController>().Initialize(ownerNumber);
 
@@ -173,7 +179,7 @@ public class GameManager : MonoBehaviour
         float currentZ = startZ;
         for (int i = 0; i < _wallsCount; i++)
         {
-            GameObject wall = Instantiate(wallPrefab);
+            GameObject wall = Instantiate(wallPrefab, wallsParent.transform);
             wall.transform.position = new Vector3(startX, wall.transform.position.y, currentZ);
             wall.transform.Rotate(0, 90, 0);
             wall.GetComponent<WallController>().Initialize(ownerNumber);
@@ -191,7 +197,7 @@ public class GameManager : MonoBehaviour
         {
             for (int x = 0; x < 8; x++)
             {
-                GameObject wallPlace = Instantiate(wallPlacePrefab);
+                GameObject wallPlace = Instantiate(wallPlacePrefab, wallPlacesParent.transform);
                 wallPlace.transform.position = new Vector3(currentXPos, wallPlace.transform.position.y, currentZPos);
 
                 WallPlaceController wallPlaceController = wallPlace.GetComponent<WallPlaceController>();
@@ -349,7 +355,7 @@ public class GameManager : MonoBehaviour
         NextTurn();
     }
 
-    
+
     private void DeselectWall()
     {
         selectedWall.Deselect();
