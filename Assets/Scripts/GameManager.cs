@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private GameType gameType;
+    public bool IsGamePaused { get; private set; } = false;
 
     private const float CellLeftDownPos = -8.4f;
     private const float CellSpacing = 2.1f;
@@ -549,5 +550,16 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("Game Finished!");
         }
+    }
+
+
+    public void PauseGame()
+    {
+        IsGamePaused = true;
+    }
+
+    public void ResumeGame()
+    {
+        IsGamePaused = false;
     }
 }

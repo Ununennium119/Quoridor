@@ -6,6 +6,15 @@
             "id": "1e009461-8f30-40d7-9f62-d511d73375ab",
             "actions": [
                 {
+                    "name": "PauseToggle",
+                    "type": "Button",
+                    "id": "c9fe1b73-c053-47c0-b538-3de1a0fb103d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "SelectPlayer",
                     "type": "Button",
                     "id": "6a6f2406-ded8-4149-bb63-8ba94f464462",
@@ -254,6 +263,17 @@
                     "processors": "",
                     "groups": "Mouse & Keyboard",
                     "action": "Zoom",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7b4184d9-42f1-4485-abc3-4994629f744b",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse & Keyboard",
+                    "action": "PauseToggle",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
