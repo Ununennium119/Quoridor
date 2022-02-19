@@ -215,7 +215,7 @@ public class GameManager : MonoBehaviour
 
 
     [UsedImplicitly]
-    private void OnSelectPlayer()
+    public void OnSelectPlayer()
     {
         PlayerController currentPlayerController = _playerControllers[(int) currentPlayerNumber];
         if (currentPlayerController.CanBeInteractedWith())
@@ -226,7 +226,7 @@ public class GameManager : MonoBehaviour
     }
 
     [UsedImplicitly]
-    private void OnDeselect()
+    public void OnDeselect()
     {
         PlayerController player = _playerControllers[(int) currentPlayerNumber];
         if (player.IsSelected)
@@ -241,7 +241,7 @@ public class GameManager : MonoBehaviour
     }
 
     [UsedImplicitly]
-    private void OnRotateWall()
+    public void OnRotateWall()
     {
         if (_ghostWallController.gameObject.activeSelf)
         {
@@ -250,8 +250,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    [UsedImplicitly]
-    private void OnPlaceWall()
+    public void OnPlaceWall()
     {
         if (_activeWallPlaceController != null && _ghostWallController.IsValid)
         {

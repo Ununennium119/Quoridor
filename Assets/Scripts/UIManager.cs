@@ -15,7 +15,7 @@ public class UIManager : MonoBehaviour
 
 
     [UsedImplicitly]
-    private void OnPauseToggle()
+    public void OnPauseToggle()
     {
         if (_gameManager.IsGamePaused)
         {

@@ -37,21 +37,21 @@ public class CameraController : MonoBehaviour
     }
     
     [UsedImplicitly]
-    private void OnRotateCameraHorizontally(InputValue value)
+    public void OnRotateCameraHorizontally(InputAction.CallbackContext context)
     {
-        _horizontalRotateValue = value.Get<float>();
+        _horizontalRotateValue = context.ReadValue<float>();
     }
 
     [UsedImplicitly]
-    private void OnRotateCameraVertically(InputValue value)
+    public void OnRotateCameraVertically(InputAction.CallbackContext context)
     {
-        _verticalRotateValue = value.Get<float>();
+        _verticalRotateValue = context.ReadValue<float>();
     }
 
     [UsedImplicitly]
-    private void OnZoom(InputValue value)
+    public void OnZoom(InputAction.CallbackContext context)
     {
-        _zoomValue = value.Get<float>();
+        _zoomValue = context.ReadValue<float>();
     }
     
 

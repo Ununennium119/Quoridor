@@ -8,7 +8,7 @@
                 {
                     "name": "PauseToggle",
                     "type": "Button",
-                    "id": "c9fe1b73-c053-47c0-b538-3de1a0fb103d",
+                    "id": "bae5a33f-d5fb-4b6c-ab82-3e5a1d230984",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -42,18 +42,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "PlaceWall",
-                    "type": "Button",
-                    "id": "1ab6ec41-2276-420f-91c4-aeb975d7af1e",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "RotateCameraHorizontally",
                     "type": "Value",
-                    "id": "d051440a-ffaf-46eb-9078-80ef535a7838",
+                    "id": "12bf47b8-f25d-4073-965c-5019c979176f",
                     "expectedControlType": "Axis",
                     "processors": "",
                     "interactions": "",
@@ -62,7 +53,7 @@
                 {
                     "name": "RotateCameraVertically",
                     "type": "Value",
-                    "id": "6774e27a-9527-4e71-8e18-dc73d75b2b06",
+                    "id": "dd8bf823-c818-4938-bf45-7ac95c4df487",
                     "expectedControlType": "Axis",
                     "processors": "",
                     "interactions": "",
@@ -71,7 +62,7 @@
                 {
                     "name": "Zoom",
                     "type": "Value",
-                    "id": "909ba670-8ec5-4e5e-a89b-a5cbf5936f9e",
+                    "id": "b19249df-40b0-4483-8dd9-5086aa667349",
                     "expectedControlType": "Axis",
                     "processors": "",
                     "interactions": "",
@@ -113,19 +104,8 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "",
-                    "id": "2fcc345c-fb0e-482f-a69e-2185bbd6fbc1",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Mouse & Keyboard",
-                    "action": "PlaceWall",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
                     "name": "AD Keys",
-                    "id": "6098a432-efe9-41a7-86a3-c0488c99adc0",
+                    "id": "5b6d1566-b49e-45b7-8c48-8cb107683fab",
                     "path": "1DAxis",
                     "interactions": "",
                     "processors": "",
@@ -136,7 +116,7 @@
                 },
                 {
                     "name": "negative",
-                    "id": "33db56c8-2c77-49c6-a728-a0fd45718283",
+                    "id": "ddbc8eec-b3d7-4ea7-933b-372bd29c8371",
                     "path": "<Keyboard>/a",
                     "interactions": "",
                     "processors": "",
@@ -147,7 +127,7 @@
                 },
                 {
                     "name": "positive",
-                    "id": "10423a2b-1913-4152-b19f-e5c755ad355d",
+                    "id": "71a298c0-79b3-4f4d-9a99-804d0f2d7e0a",
                     "path": "<Keyboard>/d",
                     "interactions": "",
                     "processors": "",
@@ -158,7 +138,7 @@
                 },
                 {
                     "name": "LeftRight Keys",
-                    "id": "430e3bcf-76b9-4431-95e5-bf11d820e4ec",
+                    "id": "5ff45d58-6935-4b8f-855c-102efe1e2cf3",
                     "path": "1DAxis",
                     "interactions": "",
                     "processors": "",
@@ -169,7 +149,7 @@
                 },
                 {
                     "name": "negative",
-                    "id": "78fd715f-a4c1-493c-9583-7189e5b6be18",
+                    "id": "9ad77103-fb6c-47a7-836d-f222357c8a23",
                     "path": "<Keyboard>/leftArrow",
                     "interactions": "",
                     "processors": "",
@@ -180,7 +160,7 @@
                 },
                 {
                     "name": "positive",
-                    "id": "a2685dcf-c92a-4f61-a08e-ec22ee4890d7",
+                    "id": "8e113ed3-7dda-47dc-80d2-39b0bffa6f74",
                     "path": "<Keyboard>/rightArrow",
                     "interactions": "",
                     "processors": "",
@@ -191,7 +171,7 @@
                 },
                 {
                     "name": "SW Keys",
-                    "id": "fe9b103e-231f-4906-a454-56732f7e6a71",
+                    "id": "a1ffb187-8821-4748-b644-7b2782e99893",
                     "path": "1DAxis",
                     "interactions": "",
                     "processors": "",
@@ -202,7 +182,7 @@
                 },
                 {
                     "name": "negative",
-                    "id": "83294ae7-78cf-4731-9dcc-a9639d6e330c",
+                    "id": "9f74431e-d73c-4d0b-99e0-f477bb3e8e38",
                     "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
@@ -213,7 +193,7 @@
                 },
                 {
                     "name": "positive",
-                    "id": "0fc336a4-c751-47aa-b54d-c9972157cae2",
+                    "id": "f70caf2a-cd9a-416c-9075-2f12a124848e",
                     "path": "<Keyboard>/w",
                     "interactions": "",
                     "processors": "",
@@ -224,7 +204,7 @@
                 },
                 {
                     "name": "DownUp Keys",
-                    "id": "0d8b90a6-bc54-4f19-9023-34bf87ea7995",
+                    "id": "dee46377-a31a-47d2-ac7a-bcc3c21d96e8",
                     "path": "1DAxis",
                     "interactions": "",
                     "processors": "",
@@ -235,7 +215,7 @@
                 },
                 {
                     "name": "negative",
-                    "id": "35ba1171-950a-4ce9-ae50-e5621f375a75",
+                    "id": "aea67bde-c372-4354-8db1-ca23d8a25a48",
                     "path": "<Keyboard>/downArrow",
                     "interactions": "",
                     "processors": "",
@@ -246,7 +226,7 @@
                 },
                 {
                     "name": "positive",
-                    "id": "0769ed53-d44f-446f-a40e-d39da6d76a49",
+                    "id": "62416510-b5af-45fd-ae1e-e90b2baf78a8",
                     "path": "<Keyboard>/upArrow",
                     "interactions": "",
                     "processors": "",
@@ -257,7 +237,7 @@
                 },
                 {
                     "name": "",
-                    "id": "eaebac6f-b7f1-425c-b496-1a6a464842e6",
+                    "id": "5a0daf44-8b16-4cfb-bc8f-6d804c630ce9",
                     "path": "<Mouse>/scroll/y",
                     "interactions": "",
                     "processors": "",
@@ -268,7 +248,7 @@
                 },
                 {
                     "name": "",
-                    "id": "7b4184d9-42f1-4485-abc3-4994629f744b",
+                    "id": "321af433-080f-4feb-a094-d8934e777507",
                     "path": "<Keyboard>/escape",
                     "interactions": "",
                     "processors": "",

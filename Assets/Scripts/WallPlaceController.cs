@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class WallPlaceController : MonoBehaviour, IPointerEnterHandler
+public class WallPlaceController : MonoBehaviour, IPointerEnterHandler, IPointerClickHandler
 {
     private GameManager _gameManager;
 
@@ -20,6 +20,11 @@ public class WallPlaceController : MonoBehaviour, IPointerEnterHandler
     public void OnPointerEnter(PointerEventData eventData)
     {
         _gameManager.SetActiveWallPlace(this);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        _gameManager.OnPlaceWall();
     }
 
 
