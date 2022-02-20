@@ -25,6 +25,18 @@ public class PlayerController : MonoBehaviour, IPointerEnterHandler, IPointerExi
     /// <value>Specifies whether the player has reached a finishing position or not.</value>
     public bool IsFinished { get; set; } = false;
 
+    /// <value>Number of the player moves (placing walls or moving).</value>
+    public int MovesCount { get; private set; } = 0;
+    
+    /// <value>The player's nickname.</value>
+    public string Nickname { get; private set; } = "Default Username";
+
+
+    public void IncrementMovesCount()
+    {
+        MovesCount++;
+    }
+
 
     private void Awake()
     {

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class GameManager : MonoBehaviour
 {
@@ -44,6 +45,8 @@ public class GameManager : MonoBehaviour
 
     private GhostWallController _ghostWallController;
     [SerializeField] private GameObject ghostWallPrefab;
+
+    [SerializeField] private UnityEvent<string> turnChanged;
 
 
     private void Awake()
@@ -538,6 +541,7 @@ public class GameManager : MonoBehaviour
 
     private void NextTurn()
     {
+        _playerControllers[(int) currentPlayerNumber].IncrementMovesCount();
         int cycleCount = 0;
         do
         {
@@ -548,6 +552,10 @@ public class GameManager : MonoBehaviour
         if (cycleCount > _playersCount)
         {
             Debug.Log("Game Finished!");
+        }
+        else
+        {
+            turnChanged.Invoke(currentPlayerNumber.ToString());
         }
     }
 
