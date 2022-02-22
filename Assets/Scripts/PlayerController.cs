@@ -29,7 +29,7 @@ public class PlayerController : MonoBehaviour, IPointerEnterHandler, IPointerExi
     public int MovesCount { get; private set; } = 0;
     
     /// <value>The player's nickname.</value>
-    public string Nickname { get; private set; } = "Default Username";
+    public string Nickname { get; private set; } = "Default Nickname";
 
 
     public void IncrementMovesCount()

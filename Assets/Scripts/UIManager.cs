@@ -2,6 +2,7 @@ using System.Collections;
 using JetBrains.Annotations;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -15,6 +16,8 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private GameObject pauseMenu;
 
+    [SerializeField] private GameObject scoreboard;
+
 
     private void Awake()
     {
@@ -23,19 +26,43 @@ public class UIManager : MonoBehaviour
         turnChangedText.gameObject.SetActive(false);
         turnChangedText.color =
             new Color(turnChangedText.color.r, turnChangedText.color.g, turnChangedText.color.b, 0.0f);
+        
+        scoreboard.SetActive(false);
+    }
+
+
+    private void Start()
+    {
+        scoreboard.GetComponent<ScoreboardController>().Initialize(_gameManager.PlayersCount);
     }
 
 
     [UsedImplicitly]
-    public void OnPauseToggle()
+    public void OnPauseToggle(InputAction.CallbackContext context)
     {
-        if (_gameManager.IsGamePaused)
+        if (context.started)
         {
-            OnResume();
+            if (_gameManager.IsGamePaused)
+            {
+                OnResume();
+            }
+            else
+            {
+                OnPause();
+            }
         }
-        else
+    }
+
+    [UsedImplicitly]
+    public void OnShowScoreboard(InputAction.CallbackContext context)
+    {
+        if (context.started)
         {
-            OnPause();
+            scoreboard.SetActive(true);
+        }
+        else if (context.canceled)
+        {
+            scoreboard.SetActive(false);
         }
     }
 

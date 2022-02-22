@@ -2,10 +2,12 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private GameType gameType;
+
     public bool IsGamePaused { get; private set; } = false;
 
     private const float CellLeftDownPos = -8.4f;
@@ -23,7 +25,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject wallCellsParent;
 
     public PlayerNumber currentPlayerNumber = PlayerNumber.PlayerOne;
-    private int _playersCount;
+    public int PlayersCount { get; private set; }
     private PlayerController[] _playerControllers;
     [SerializeField] private GameObject[] playerPrefabs;
     [SerializeField] private GameObject playersParent;
@@ -47,18 +49,19 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject ghostWallPrefab;
 
     [SerializeField] private UnityEvent<string> turnChanged;
+    [SerializeField] private UnityEvent<ScoreboardData[]> updateScoreboard;
 
 
     private void Awake()
     {
         if (gameType == GameType.TwoPlayers)
         {
-            _playersCount = 2;
+            PlayersCount = 2;
             _wallsCount = 10;
         }
         else
         {
-            _playersCount = 4;
+            PlayersCount = 4;
             _wallsCount = 5;
         }
     }
@@ -73,6 +76,8 @@ public class GameManager : MonoBehaviour
         CreatePlayers();
         CreateWalls();
         CreateWallPlaces();
+        
+        updateScoreboard.Invoke(GetScoreboardData());
     }
 
 
@@ -144,8 +149,8 @@ public class GameManager : MonoBehaviour
 
     private void CreatePlayers()
     {
-        _playerControllers = new PlayerController[_playersCount];
-        for (int i = 0; i < _playersCount; i++)
+        _playerControllers = new PlayerController[PlayersCount];
+        for (int i = 0; i < PlayersCount; i++)
         {
             PlayerController playerController =
                 Instantiate(playerPrefabs[i], playersParent.transform).GetComponent<PlayerController>();
@@ -218,38 +223,47 @@ public class GameManager : MonoBehaviour
 
 
     [UsedImplicitly]
-    public void OnSelectPlayer()
+    public void OnSelectPlayer(InputAction.CallbackContext context)
     {
-        PlayerController currentPlayerController = _playerControllers[(int) currentPlayerNumber];
-        if (currentPlayerController.CanBeInteractedWith())
+        if (context.started)
         {
-            currentPlayerController.Select();
-            ShowReachableCells(currentPlayerController.PlayerPosition);
+            PlayerController currentPlayerController = _playerControllers[(int) currentPlayerNumber];
+            if (currentPlayerController.CanBeInteractedWith())
+            {
+                currentPlayerController.Select();
+                ShowReachableCells(currentPlayerController.PlayerPosition);
+            }
         }
     }
 
     [UsedImplicitly]
-    public void OnDeselect()
+    public void OnDeselect(InputAction.CallbackContext context)
     {
-        PlayerController player = _playerControllers[(int) currentPlayerNumber];
-        if (player.IsSelected)
+        if (context.started)
         {
-            player.Deselect();
-            HideSelectableCells();
-        }
-        else if (selectedWall != null)
-        {
-            DeselectWall();
+            PlayerController player = _playerControllers[(int) currentPlayerNumber];
+            if (player.IsSelected)
+            {
+                player.Deselect();
+                HideSelectableCells();
+            }
+            else if (selectedWall != null)
+            {
+                DeselectWall();
+            }
         }
     }
 
     [UsedImplicitly]
-    public void OnRotateWall()
+    public void OnRotateWall(InputAction.CallbackContext context)
     {
-        if (_ghostWallController.gameObject.activeSelf)
+        if (context.started)
         {
-            _ghostWallController.Rotate();
-            _ghostWallController.SetValid(IsWallPlaceValid());
+            if (_ghostWallController.gameObject.activeSelf)
+            {
+                _ghostWallController.Rotate();
+                _ghostWallController.SetValid(IsWallPlaceValid());
+            }
         }
     }
 
@@ -416,7 +430,7 @@ public class GameManager : MonoBehaviour
         if (result)
         {
             UpdateCells(_activeWallPlaceController.Position, true);
-            for (int i = 0; i < _playersCount; i++)
+            for (int i = 0; i < PlayersCount; i++)
             {
                 PlayerController playerController = _playerControllers[i];
                 if (playerController.IsFinished) continue;
@@ -545,11 +559,13 @@ public class GameManager : MonoBehaviour
         int cycleCount = 0;
         do
         {
-            currentPlayerNumber = (PlayerNumber) (((int) currentPlayerNumber + 1) % _playersCount);
+            currentPlayerNumber = (PlayerNumber) (((int) currentPlayerNumber + 1) % PlayersCount);
             cycleCount += 1;
-        } while (_playerControllers[(int) currentPlayerNumber].IsFinished && cycleCount <= _playersCount);
+        } while (_playerControllers[(int) currentPlayerNumber].IsFinished && cycleCount <= PlayersCount);
 
-        if (cycleCount > _playersCount)
+        updateScoreboard.Invoke(GetScoreboardData());
+
+        if (cycleCount > PlayersCount)
         {
             Debug.Log("Game Finished!");
         }
@@ -568,5 +584,34 @@ public class GameManager : MonoBehaviour
     public void ResumeGame()
     {
         IsGamePaused = false;
+    }
+
+
+    private ScoreboardData[] GetScoreboardData()
+    {
+        ScoreboardData[] scoreboardData = new ScoreboardData[PlayersCount];
+        for (int i = 0; i < PlayersCount; i++)
+        {
+            PlayerController playerController = _playerControllers[i];
+
+            string status;
+            if (playerController.IsFinished)
+            {
+                status = "Finished";
+            }
+            else if ((int) currentPlayerNumber == i)
+            {
+                status = "Active";
+            }
+            else
+            {
+                status = "Waiting";
+            }
+
+            scoreboardData[i] =
+                new ScoreboardData(playerController.Nickname, playerController.MovesCount.ToString(), status);
+        }
+
+        return scoreboardData;
     }
 }

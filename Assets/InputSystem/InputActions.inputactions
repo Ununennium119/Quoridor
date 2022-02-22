@@ -15,6 +15,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "ShowScoreboard",
+                    "type": "Button",
+                    "id": "58d47f76-c424-4947-aa7b-a0f10956e685",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "SelectPlayer",
                     "type": "Button",
                     "id": "6a6f2406-ded8-4149-bb63-8ba94f464462",
@@ -254,6 +263,17 @@
                     "processors": "",
                     "groups": "Mouse & Keyboard",
                     "action": "PauseToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c255ff40-9893-492f-89c1-cc9065108a32",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse & Keyboard",
+                    "action": "ShowScoreboard",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
