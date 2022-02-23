@@ -74,6 +74,7 @@ public class PlayerController : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         return !IsFinished &&
                !IsSelected &&
+               !_gameManager.IsGameOver &&
                _gameManager.currentPlayerNumber == playerNumber &&
                _gameManager.selectedWall == null;
     }

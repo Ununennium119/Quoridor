@@ -9,25 +9,28 @@ public class UIManager : MonoBehaviour
 {
     private GameManager _gameManager;
 
-    private const float TurnChangedTextFadeInSeconds = 0.7f;
-    private const float TurnChangedTextFadeOutSeconds = 0.6f;
-    private const float TurnChangedTextStopSeconds = 1.0f;
+    private const float TurnChangedTextFadeInSeconds = 0.4f;
+    private const float TurnChangedTextFadeOutSeconds = 0.4f;
+    private const float TurnChangedTextStopSeconds = 0.8f;
     [SerializeField] private TextMeshProUGUI turnChangedText;
 
-    [SerializeField] private GameObject pauseMenu;
+    private const float GameOverFadeInSeconds = 1.5f;
+    [SerializeField] private TextMeshProUGUI gameOverText;
 
     [SerializeField] private GameObject scoreboard;
+    [SerializeField] private GameObject pauseButton;
+    [SerializeField] private GameObject backButton;
+    [SerializeField] private GameObject pauseMenu;
 
 
     private void Awake()
     {
         _gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-        
+
         turnChangedText.gameObject.SetActive(false);
-        turnChangedText.color =
-            new Color(turnChangedText.color.r, turnChangedText.color.g, turnChangedText.color.b, 0.0f);
-        
+        gameOverText.gameObject.SetActive(false);
         scoreboard.SetActive(false);
+        backButton.SetActive(false);
     }
 
 
@@ -40,15 +43,18 @@ public class UIManager : MonoBehaviour
     [UsedImplicitly]
     public void OnPauseToggle(InputAction.CallbackContext context)
     {
-        if (context.started)
+        if (!_gameManager.IsGameOver)
         {
-            if (_gameManager.IsGamePaused)
+            if (context.started)
             {
-                OnResume();
-            }
-            else
-            {
-                OnPause();
+                if (_gameManager.IsGamePaused)
+                {
+                    OnResume();
+                }
+                else
+                {
+                    OnPause();
+                }
             }
         }
     }
@@ -56,13 +62,16 @@ public class UIManager : MonoBehaviour
     [UsedImplicitly]
     public void OnShowScoreboard(InputAction.CallbackContext context)
     {
-        if (context.started)
+        if (!_gameManager.IsGameOver)
         {
-            scoreboard.SetActive(true);
-        }
-        else if (context.canceled)
-        {
-            scoreboard.SetActive(false);
+            if (context.started)
+            {
+                scoreboard.SetActive(true);
+            }
+            else if (context.canceled)
+            {
+                scoreboard.SetActive(false);
+            }
         }
     }
 
@@ -70,14 +79,12 @@ public class UIManager : MonoBehaviour
     {
         pauseMenu.SetActive(true);
         _gameManager.PauseGame();
-        Debug.Log("pause");
     }
 
     private void OnResume()
     {
         pauseMenu.SetActive(false);
         _gameManager.ResumeGame();
-        Debug.Log("resume");
     }
 
     public void OnTurnChanged(string playerNickname)
@@ -85,7 +92,22 @@ public class UIManager : MonoBehaviour
         turnChangedText.text = $"It's {playerNickname}'s Turn!";
         StartCoroutine(ShowTurnChangedText());
     }
-    
+
+    public void OnGameOver()
+    {
+        Debug.Log(backButton.GetComponent<Image>());
+        Debug.Log(backButton.GetComponentInChildren<TextMeshProUGUI>());
+        Debug.Log(scoreboard.GetComponent<RawImage>());
+        pauseButton.GetComponent<Button>().interactable = false;
+        backButton.SetActive(true);
+        scoreboard.SetActive(true);
+        gameOverText.gameObject.SetActive(true);
+        StartCoroutine(FadeInGraphic(GameOverFadeInSeconds, backButton.GetComponent<Image>()));
+        StartCoroutine(FadeInGraphic(GameOverFadeInSeconds, backButton.GetComponentInChildren<TextMeshProUGUI>()));
+        StartCoroutine(FadeInGraphic(GameOverFadeInSeconds, scoreboard.GetComponent<RawImage>()));
+        StartCoroutine(FadeInGraphic(GameOverFadeInSeconds, gameOverText));
+    }
+
 
     private IEnumerator ShowTurnChangedText()
     {
@@ -95,23 +117,27 @@ public class UIManager : MonoBehaviour
         yield return StartCoroutine(FadeOutGraphic(TurnChangedTextFadeOutSeconds, turnChangedText));
         turnChangedText.gameObject.SetActive(false);
     }
-    
-    
+
+
     private static IEnumerator FadeOutGraphic(float fadeSeconds, Graphic graphic)
     {
+        graphic.color = new Color(graphic.color.r, graphic.color.g, graphic.color.b, 1.0f);
         float elapsedTime = 0.0f;
         while (elapsedTime < fadeSeconds)
         {
-            graphic.color = new Color(graphic.color.r, graphic.color.g, graphic.color.b, 1.0f - (elapsedTime / fadeSeconds));
+            graphic.color = new Color(graphic.color.r, graphic.color.g, graphic.color.b,
+                1.0f - (elapsedTime / fadeSeconds));
 
             elapsedTime += Time.deltaTime;
             yield return new WaitForEndOfFrame();
         }
+
         graphic.color = new Color(graphic.color.r, graphic.color.g, graphic.color.b, 0.0f);
     }
-    
+
     private static IEnumerator FadeInGraphic(float fadeSeconds, Graphic graphic)
     {
+        graphic.color = new Color(graphic.color.r, graphic.color.g, graphic.color.b, 0.0f);
         float elapsedTime = 0.0f;
         while (elapsedTime < fadeSeconds)
         {
@@ -120,6 +146,7 @@ public class UIManager : MonoBehaviour
             elapsedTime += Time.deltaTime;
             yield return new WaitForEndOfFrame();
         }
+
         graphic.color = new Color(graphic.color.r, graphic.color.g, graphic.color.b, 1.0f);
     }
 }

@@ -61,6 +61,7 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     private bool CanBeInteractedWith()
     {
         return !IsPlaced &&
+               !_gameManager.IsGameOver &&
                _gameManager.selectedWall == null &&
                _gameManager.currentPlayerNumber == OwnerNumber &&
                !_gameManager.IsCurrentPlayerSelected();

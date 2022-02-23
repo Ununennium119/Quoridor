@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameType gameType;
 
     public bool IsGamePaused { get; private set; } = false;
+    public bool IsGameOver { get; private set; } = false;
 
     private const float CellLeftDownPos = -8.4f;
     private const float CellSpacing = 2.1f;
@@ -50,6 +51,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private UnityEvent<string> turnChanged;
     [SerializeField] private UnityEvent<ScoreboardData[]> updateScoreboard;
+    [SerializeField] private UnityEvent gameOver;
 
 
     private void Awake()
@@ -225,13 +227,16 @@ public class GameManager : MonoBehaviour
     [UsedImplicitly]
     public void OnSelectPlayer(InputAction.CallbackContext context)
     {
-        if (context.started)
+        if (!IsGameOver)
         {
-            PlayerController currentPlayerController = _playerControllers[(int) currentPlayerNumber];
-            if (currentPlayerController.CanBeInteractedWith())
+            if (context.started)
             {
-                currentPlayerController.Select();
-                ShowReachableCells(currentPlayerController.PlayerPosition);
+                PlayerController currentPlayerController = _playerControllers[(int) currentPlayerNumber];
+                if (currentPlayerController.CanBeInteractedWith())
+                {
+                    currentPlayerController.Select();
+                    ShowReachableCells(currentPlayerController.PlayerPosition);
+                }
             }
         }
     }
@@ -239,17 +244,20 @@ public class GameManager : MonoBehaviour
     [UsedImplicitly]
     public void OnDeselect(InputAction.CallbackContext context)
     {
-        if (context.started)
+        if (!IsGameOver)
         {
-            PlayerController player = _playerControllers[(int) currentPlayerNumber];
-            if (player.IsSelected)
+            if (context.started)
             {
-                player.Deselect();
-                HideSelectableCells();
-            }
-            else if (selectedWall != null)
-            {
-                DeselectWall();
+                PlayerController player = _playerControllers[(int) currentPlayerNumber];
+                if (player.IsSelected)
+                {
+                    player.Deselect();
+                    HideSelectableCells();
+                }
+                else if (selectedWall != null)
+                {
+                    DeselectWall();
+                }
             }
         }
     }
@@ -257,21 +265,27 @@ public class GameManager : MonoBehaviour
     [UsedImplicitly]
     public void OnRotateWall(InputAction.CallbackContext context)
     {
-        if (context.started)
+        if (!IsGameOver)
         {
-            if (_ghostWallController.gameObject.activeSelf)
+            if (context.started)
             {
-                _ghostWallController.Rotate();
-                _ghostWallController.SetValid(IsWallPlaceValid());
+                if (_ghostWallController.gameObject.activeSelf)
+                {
+                    _ghostWallController.Rotate();
+                    _ghostWallController.SetValid(IsWallPlaceValid());
+                }
             }
         }
     }
 
     public void OnPlaceWall()
     {
-        if (_activeWallPlaceController != null && _ghostWallController.IsValid)
+        if (!IsGameOver)
         {
-            PlaceWall();
+            if (_activeWallPlaceController != null && _ghostWallController.IsValid)
+            {
+                PlaceWall();
+            }
         }
     }
 
@@ -567,7 +581,8 @@ public class GameManager : MonoBehaviour
 
         if (cycleCount > PlayersCount)
         {
-            Debug.Log("Game Finished!");
+            IsGameOver = true;
+            gameOver.Invoke();
         }
         else
         {
