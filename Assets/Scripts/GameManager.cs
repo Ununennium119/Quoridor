@@ -64,16 +64,9 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (gameType == GameType.TwoPlayers)
-        {
-            PlayersCount = 2;
-            _wallsCount = 10;
-        }
-        else
-        {
-            PlayersCount = 4;
-            _wallsCount = 5;
-        }
+        PlayersCount = GlobalVariables.PlayersNicknames.Length;
+        gameType = PlayersCount == 2 ? GameType.TwoPlayers : GameType.FourPlayers;
+        _wallsCount = gameType == GameType.TwoPlayers ? 10 : 5;
     }
 
     private void Start()
@@ -164,6 +157,7 @@ public class GameManager : MonoBehaviour
         {
             PlayerController playerController =
                 Instantiate(playerPrefabs[i], playersParent.transform).GetComponent<PlayerController>();
+            playerController.Nickname = GlobalVariables.PlayersNicknames[i];
             Position position = playerController.PlayerPosition;
             _playerControllers[i] = playerController;
 
@@ -594,7 +588,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            turnChanged.Invoke(CurrentPlayerNumber.ToString());
+            turnChanged.Invoke(_playerControllers[(int) CurrentPlayerNumber].Nickname);
         }
     }
 

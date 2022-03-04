@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -85,6 +86,12 @@ public class UIManager : MonoBehaviour
     {
         pauseMenu.SetActive(false);
         _gameManager.ResumeGame();
+    }
+
+    [UsedImplicitly]
+    public void OnExit()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 
     public void OnTurnChanged(string playerNickname)
