@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -6,7 +7,6 @@ using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private GameType gameType;
 
     public bool IsGamePaused { get; private set; } = false;
     public bool IsGameOver { get; private set; } = false;
@@ -15,44 +15,52 @@ public class GameManager : MonoBehaviour
     private const float CellSpacing = 2.1f;
     private readonly CellController[,] _cellControllers = new CellController[9, 9];
     private readonly List<CellController> _reachableCells = new List<CellController>();
-    [SerializeField] private GameObject cellPrefab;
-    [SerializeField] private GameObject cellsParent;
 
     private const float WallCellHorizontalOffset = 8.4f;
     private const float WallCellVerticalOffset = 11.5f;
     private const float WallCellSpacing = 2.1f;
     private readonly CellController[,] _wallCellControllers = new CellController[4, 9];
-    [SerializeField] private GameObject wallCellPrefab;
-    [SerializeField] private GameObject wallCellsParent;
 
-    public PlayerNumber currentPlayerNumber = PlayerNumber.PlayerOne;
+    [NonSerialized] public PlayerNumber CurrentPlayerNumber = PlayerNumber.PlayerOne;
     public int PlayersCount { get; private set; }
     private PlayerController[] _playerControllers;
-    [SerializeField] private GameObject[] playerPrefabs;
-    [SerializeField] private GameObject playersParent;
 
-    public WallController selectedWall;
+    [NonSerialized] public WallController SelectedWall;
     private const float WallHorizontalOffset = 9.45f;
     private const float WallVerticalOffset = 11.5f;
     private const float WallSpacing = 2.1f;
     private int _wallsCount;
-    [SerializeField] private GameObject wallPrefab;
-    [SerializeField] private GameObject wallsParent;
 
     private const float WallPlaceLeftDownPos = -7.35f;
     private const float WallPlaceSpacing = 2.1f;
     private readonly WallPlaceController[,] _wallPlaceControllers = new WallPlaceController[8, 8];
     private WallPlaceController _activeWallPlaceController;
-    [SerializeField] private GameObject wallPlacePrefab;
-    [SerializeField] private GameObject wallPlacesParent;
 
     private GhostWallController _ghostWallController;
-    [SerializeField] private GameObject ghostWallPrefab;
 
+    [Header("Game Settings")]
+    [SerializeField] private GameType gameType;
+    
+    [Header("Prefabs")]
+    [SerializeField] private GameObject cellPrefab;
+    [SerializeField] private GameObject wallCellPrefab;
+    [SerializeField] private GameObject[] playerPrefabs;
+    [SerializeField] private GameObject wallPrefab;
+    [SerializeField] private GameObject wallPlacePrefab;
+    [SerializeField] private GameObject ghostWallPrefab;
+    
+    [Header("Parents")]
+    [SerializeField] private GameObject cellsParent;
+    [SerializeField] private GameObject wallCellsParent;
+    [SerializeField] private GameObject playersParent;
+    [SerializeField] private GameObject wallsParent;
+    [SerializeField] private GameObject wallPlacesParent;
+    
+    [Header("Events")]
     [SerializeField] private UnityEvent<string> turnChanged;
     [SerializeField] private UnityEvent<ScoreboardData[]> updateScoreboard;
     [SerializeField] private UnityEvent gameOver;
-
+    
 
     private void Awake()
     {
@@ -231,7 +239,7 @@ public class GameManager : MonoBehaviour
         {
             if (context.started)
             {
-                PlayerController currentPlayerController = _playerControllers[(int) currentPlayerNumber];
+                PlayerController currentPlayerController = _playerControllers[(int) CurrentPlayerNumber];
                 if (currentPlayerController.CanBeInteractedWith())
                 {
                     currentPlayerController.Select();
@@ -248,13 +256,13 @@ public class GameManager : MonoBehaviour
         {
             if (context.started)
             {
-                PlayerController player = _playerControllers[(int) currentPlayerNumber];
+                PlayerController player = _playerControllers[(int) CurrentPlayerNumber];
                 if (player.IsSelected)
                 {
                     player.Deselect();
                     HideSelectableCells();
                 }
-                else if (selectedWall != null)
+                else if (SelectedWall != null)
                 {
                     DeselectWall();
                 }
@@ -323,16 +331,16 @@ public class GameManager : MonoBehaviour
         }
 
         // check if target position is a finishing cell
-        if ((int) direction == (int) currentPlayerNumber)
+        if ((int) direction == (int) CurrentPlayerNumber)
         {
             CellController reachableCell = null;
             if (targetPosition.X < 0 || targetPosition.X > 8)
             {
-                reachableCell = _wallCellControllers[(int) currentPlayerNumber, targetPosition.Z];
+                reachableCell = _wallCellControllers[(int) CurrentPlayerNumber, targetPosition.Z];
             }
             else if (targetPosition.Z < 0 || targetPosition.Z > 8)
             {
-                reachableCell = _wallCellControllers[(int) currentPlayerNumber, targetPosition.X];
+                reachableCell = _wallCellControllers[(int) CurrentPlayerNumber, targetPosition.X];
             }
 
             if (reachableCell != null)
@@ -356,12 +364,12 @@ public class GameManager : MonoBehaviour
 
     public bool IsCurrentPlayerSelected()
     {
-        return _playerControllers[(int) currentPlayerNumber].IsSelected;
+        return _playerControllers[(int) CurrentPlayerNumber].IsSelected;
     }
 
     public void MovePlayer(CellController targetCellController)
     {
-        PlayerController playerController = _playerControllers[(int) currentPlayerNumber];
+        PlayerController playerController = _playerControllers[(int) CurrentPlayerNumber];
         Position cellPosition = targetCellController.CellPosition;
         CellController baseCellController =
             _cellControllers[playerController.PlayerPosition.X, playerController.PlayerPosition.Z];
@@ -389,8 +397,8 @@ public class GameManager : MonoBehaviour
 
     private void DeselectWall()
     {
-        selectedWall.Deselect();
-        selectedWall = null;
+        SelectedWall.Deselect();
+        SelectedWall = null;
         _activeWallPlaceController = null;
         _ghostWallController.gameObject.SetActive(false);
     }
@@ -398,7 +406,7 @@ public class GameManager : MonoBehaviour
     private void PlaceWall()
     {
         _activeWallPlaceController.ContainsWall = true;
-        selectedWall.PlaceWall(_ghostWallController.transform.position, _ghostWallController.transform.rotation);
+        SelectedWall.PlaceWall(_ghostWallController.transform.position, _ghostWallController.transform.rotation);
         UpdateCells(_activeWallPlaceController.Position, true);
         DeselectWall();
         NextTurn();
@@ -407,7 +415,7 @@ public class GameManager : MonoBehaviour
 
     public void SetActiveWallPlace(WallPlaceController wallPlaceController)
     {
-        if (selectedWall != null)
+        if (SelectedWall != null)
         {
             _activeWallPlaceController = wallPlaceController;
             _ghostWallController.Move(wallPlaceController.transform.position);
@@ -569,13 +577,13 @@ public class GameManager : MonoBehaviour
 
     private void NextTurn()
     {
-        _playerControllers[(int) currentPlayerNumber].IncrementMovesCount();
+        _playerControllers[(int) CurrentPlayerNumber].IncrementMovesCount();
         int cycleCount = 0;
         do
         {
-            currentPlayerNumber = (PlayerNumber) (((int) currentPlayerNumber + 1) % PlayersCount);
+            CurrentPlayerNumber = (PlayerNumber) (((int) CurrentPlayerNumber + 1) % PlayersCount);
             cycleCount += 1;
-        } while (_playerControllers[(int) currentPlayerNumber].IsFinished && cycleCount <= PlayersCount);
+        } while (_playerControllers[(int) CurrentPlayerNumber].IsFinished && cycleCount <= PlayersCount);
 
         updateScoreboard.Invoke(GetScoreboardData());
 
@@ -586,7 +594,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            turnChanged.Invoke(currentPlayerNumber.ToString());
+            turnChanged.Invoke(CurrentPlayerNumber.ToString());
         }
     }
 
@@ -614,7 +622,7 @@ public class GameManager : MonoBehaviour
             {
                 status = "Finished";
             }
-            else if ((int) currentPlayerNumber == i)
+            else if ((int) CurrentPlayerNumber == i)
             {
                 status = "Active";
             }

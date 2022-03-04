@@ -41,7 +41,7 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (CanBeInteractedWith())
         {
             Select();
-            _gameManager.selectedWall = this;
+            _gameManager.SelectedWall = this;
         }
     }
 
@@ -62,8 +62,8 @@ public class WallController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     {
         return !IsPlaced &&
                !_gameManager.IsGameOver &&
-               _gameManager.selectedWall == null &&
-               _gameManager.currentPlayerNumber == OwnerNumber &&
+               _gameManager.SelectedWall == null &&
+               _gameManager.CurrentPlayerNumber == OwnerNumber &&
                !_gameManager.IsCurrentPlayerSelected();
     }
 

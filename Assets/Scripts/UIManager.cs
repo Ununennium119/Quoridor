@@ -95,9 +95,6 @@ public class UIManager : MonoBehaviour
 
     public void OnGameOver()
     {
-        Debug.Log(backButton.GetComponent<Image>());
-        Debug.Log(backButton.GetComponentInChildren<TextMeshProUGUI>());
-        Debug.Log(scoreboard.GetComponent<RawImage>());
         pauseButton.GetComponent<Button>().interactable = false;
         backButton.SetActive(true);
         scoreboard.SetActive(true);
