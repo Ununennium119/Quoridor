@@ -170,8 +170,11 @@ public class GameManager : MonoBehaviour
     {
         CreateWallRow(-WallHorizontalOffset, -WallVerticalOffset, WallSpacing, PlayerNumber.PlayerOne);
         CreateWallRow(WallHorizontalOffset, WallVerticalOffset, -WallSpacing, PlayerNumber.PlayerTwo);
-        CreateWallColumn(-WallVerticalOffset, WallHorizontalOffset, -WallSpacing, PlayerNumber.PlayerThree);
-        CreateWallColumn(WallVerticalOffset, -WallHorizontalOffset, WallSpacing, PlayerNumber.PlayerFour);
+        if (gameType == GameType.FourPlayers)
+        {
+            CreateWallColumn(-WallVerticalOffset, WallHorizontalOffset, -WallSpacing, PlayerNumber.PlayerThree);
+            CreateWallColumn(WallVerticalOffset, -WallHorizontalOffset, WallSpacing, PlayerNumber.PlayerFour);
+        }
     }
 
     private void CreateWallRow(float startX, float startZ, float xChange, PlayerNumber ownerNumber)

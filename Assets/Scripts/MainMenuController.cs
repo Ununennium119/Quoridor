@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Linq;
+using JetBrains.Annotations;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -17,6 +18,7 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private GameObject promptNicknameMenu;
 
     [SerializeField] private TextMeshProUGUI nicknamePromptText;
+    [SerializeField] private TextMeshProUGUI nicknameErrorText;
     [SerializeField] private TMP_InputField nicknameFieldText;
 
 
@@ -53,13 +55,24 @@ public class MainMenuController : MonoBehaviour
         _currentPlayer = 0;
         _playerNicknames = new string[playersCount];
         SetMenu(promptNicknameMenu);
+        
         nicknamePromptText.text = $"Enter Player {_currentPlayer + 1}'s Nickname";
+        nicknameErrorText.gameObject.SetActive(false);
+        nicknameFieldText.text = "";
         nicknameFieldText.Select();
     }
 
     [UsedImplicitly]
     public void SubmitNickname()
     {
+        string nickname = nicknameFieldText.text;
+        if (_playerNicknames.Contains(nickname))
+        {
+            nicknameErrorText.gameObject.SetActive(true);
+            return;
+        }
+        
+        nicknameErrorText.gameObject.SetActive(false);
         _playerNicknames[_currentPlayer] = nicknameFieldText.text;
         _currentPlayer++;
         if (_currentPlayer < _playersCount)

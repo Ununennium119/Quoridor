@@ -10,6 +10,7 @@ public class UIInputFieldController : MonoBehaviour
     public void OnInputFieldSelect()
     {
         inputField.placeholder.gameObject.SetActive(false);
+        
     }
 
     [UsedImplicitly]
